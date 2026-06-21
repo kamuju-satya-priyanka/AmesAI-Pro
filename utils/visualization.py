@@ -17,7 +17,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from rdkit.Chem.Draw import rdMolDraw2D
+from rdkit.Chem import Draw
 
 warnings.filterwarnings("ignore")
 
@@ -62,7 +62,7 @@ def mol_to_svg(mol, width: int = 400, height: int = 300, dark: bool = True) -> s
 def mol_to_png_bytes(mol, width: int = 600, height: int = 400) -> bytes:
     """Render molecule to PNG bytes for download."""
     from rdkit.Chem import Draw
-    img = Draw.MolToImage(mol, size=(width, height))
+    img = Draw.MolToImage(mol, size=(400,400))
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return buf.getvalue()

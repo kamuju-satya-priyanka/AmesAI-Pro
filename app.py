@@ -9,7 +9,6 @@ Version : 2.0.0
 """
 
 from __future__ import annotations
-
 import io
 import json
 import os
@@ -17,7 +16,7 @@ import time
 import warnings
 from pathlib import Path
 from typing import Optional
-
+from rdkit.Chem import Draw
 import numpy as np
 import pandas as pd
 import streamlit as st
