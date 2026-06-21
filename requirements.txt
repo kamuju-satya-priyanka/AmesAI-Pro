@@ -3,7 +3,7 @@ pandas
 numpy
 scikit-learn
 xgboost
-rdkit-pypi
+rdkit-pypi==2022.9.5
 plotly
 joblib
 shap
