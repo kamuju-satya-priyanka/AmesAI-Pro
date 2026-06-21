@@ -18,6 +18,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from rdkit.Chem import Draw
+try:
+    from rdkit.Chem.Draw import rdMolDraw2D as _rdMolDraw2D
+    _HAS_CAIRO = True
+except Exception:
+    _rdMolDraw2D = None
+    _HAS_CAIRO = False
 
 warnings.filterwarnings("ignore")
 
@@ -45,18 +51,28 @@ PLOTLY_DARK = dict(
 # ══════════════════════════════════════════════════════════════════════════════
 
 def mol_to_svg(mol, width: int = 400, height: int = 300, dark: bool = True) -> str:
-    """Render RDKit mol to SVG data-URI (base64-encoded)."""
-    drawer = rdMolDraw2D.MolDraw2DSVG(width, height)
-    opts   = drawer.drawOptions()
-    opts.addStereoAnnotation = True
-    opts.padding = 0.12
-    if dark:
-        opts.backgroundColour = (10/255, 14/255, 26/255, 1)
-    drawer.DrawMolecule(mol)
-    drawer.FinishDrawing()
-    svg = drawer.GetDrawingText()
-    b64 = base64.b64encode(svg.encode("utf-8")).decode("utf-8")
-    return f"data:image/svg+xml;base64,{b64}"
+    """Render RDKit mol to SVG data-URI (needs Cairo) or PNG data-URI fallback."""
+    if _HAS_CAIRO and _rdMolDraw2D is not None:
+        try:
+            drawer = _rdMolDraw2D.MolDraw2DSVG(width, height)
+            opts   = drawer.drawOptions()
+            opts.addStereoAnnotation = True
+            opts.padding = 0.12
+            if dark:
+                opts.backgroundColour = (10/255, 14/255, 26/255, 1)
+            drawer.DrawMolecule(mol)
+            drawer.FinishDrawing()
+            svg = drawer.GetDrawingText()
+            b64 = base64.b64encode(svg.encode("utf-8")).decode("utf-8")
+            return f"data:image/svg+xml;base64,{b64}"
+        except Exception:
+            pass  # fall through to PIL fallback
+    # ── PIL/PNG fallback (no Cairo needed) ──────────────────────────────────
+    img = Draw.MolToImage(mol, size=(width, height))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{b64}"
 
 
 def mol_to_png_bytes(mol, width: int = 600, height: int = 400) -> bytes:
