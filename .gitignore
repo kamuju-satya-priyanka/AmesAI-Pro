@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Keep model artifacts in git so Cloud skips the 30-second first-run build
+# (comment these out if you prefer auto-train on every cold start)
+# model/xgboost_model.pkl
+# model/metrics.json

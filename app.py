@@ -549,6 +549,29 @@ if "total_predictions" not in st.session_state:
     st.session_state.total_predictions = 0
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  AUTO-TRAIN  (runs once on Streamlit Cloud if model is absent)
+# ══════════════════════════════════════════════════════════════════════════════
+
+_MODEL_PKL  = Path(__file__).parent / "model" / "xgboost_model.pkl"
+_METRICS_JSON = Path(__file__).parent / "model" / "metrics.json"
+
+if not _MODEL_PKL.exists() or not _METRICS_JSON.exists():
+    with st.spinner("⏳ First-run setup: training XGBoost model… (takes ~30 s)"):
+        try:
+            import subprocess, sys
+            subprocess.run(
+                [sys.executable, str(Path(__file__).parent / "train_model.py")],
+                check=True,
+                capture_output=True,
+            )
+            st.cache_resource.clear()   # flush any stale load_model() cache
+            st.cache_data.clear()       # flush load_metrics() cache
+        except Exception as _train_err:
+            st.error(f"Auto-training failed: {_train_err}. "
+                     "Please run `python train_model.py` manually.")
+            st.stop()
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  REFERENCE DATASET  (for similarity search & analytics)
 # ══════════════════════════════════════════════════════════════════════════════
 
